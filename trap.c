@@ -77,6 +77,14 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+  case T_PGFLT:
+    //handle the pagefault and grow the stack here
+    if(((KERNBASE - 1)-PGSIZE*(myproc()->stackPages)) > rcr2() && rcr2() > (((KERNBASE - 1)-PGSIZE*(myproc()->stackPages)) - PGSIZE)){
+ 	allocuvm(myproc()->pgdir,((KERNBASE - 1)-PGSIZE*(myproc()->stackPages + 1)), ((KERNBASE - 1)-PGSIZE*(myproc()->stackPages))); //allocate a new page
+        myproc()->stackPages = myproc()->stackPages + 1; //stack page number + 1
+        cprintf("add one page for stack\n"); //message
+    }
+    break;
 
   //PAGEBREAK: 13
   default:
